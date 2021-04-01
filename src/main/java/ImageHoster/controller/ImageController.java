@@ -29,8 +29,7 @@ public class ImageController {
     @Autowired
     private TagService tagService;
 
-    @Autowired
-    private CommentService commentService;
+
 
     //This method displays all the images in the user home page after successful login
     @RequestMapping("images")
@@ -50,16 +49,22 @@ public class ImageController {
     //Also now you need to add the tags of an image in the Model type object
     //Here a list of tags is added in the Model type object
     //this list is then sent to 'images/image.html' file and the tags are displayed
-    @RequestMapping("/images/{id}")
-    public String showImage(@PathVariable("id") int id, Model model) {
-        Image image = imageService.getImageById(id);
+    @RequestMapping("/images/{id}/{title}")
+    public String showImage(@PathVariable("id") int id,@PathVariable("title") String title, Model model) {
+        Image image = imageService.getImageByIdAndTitle(id,title);
+        if(image==null)
+        {
+            image=new Image(1,"new","Demo",new Date());
+        }
+
 
         model.addAttribute("image", image);
 
-        model.addAttribute("tags", image.getTags());
 
-        model.addAttribute("comments", image.getComments());
-        image.getComments().stream().forEach(System.out::println);
+        model.addAttribute("tags", image==null?null:image.getTags());
+
+        model.addAttribute("comments", image==null?null:image.getComments());
+
         return "images/image";
     }
 
@@ -95,24 +100,7 @@ public class ImageController {
         return "redirect:/images";
     }
 
-    @RequestMapping(value = "/image/{imageId}/{imageTitle}/comments", method = RequestMethod.POST)
-    public String createComments(@RequestParam("comment") String comment, @PathVariable(name = "imageId") int imageId,@PathVariable(name = "imageTitle") String imageTitle, HttpSession session) throws IOException {
 
-        User user = (User) session.getAttribute("loggeduser");
-        Image image=imageService.getImage(imageId);
-        Comment newComment=new Comment();
-        newComment.setText(comment);
-        newComment.setUser(user);
-        newComment.setImage(image);
-        newComment.setCreatedDate(new Date());
-
-
-
-
-
-        commentService.createComment(newComment);
-        return "redirect:/images/"+image.getId();
-    }
 
     //This controller method is called when the request pattern is of type 'editImage'
     //This method fetches the image with the corresponding id from the database and adds it to the model with the key as 'image'
@@ -172,7 +160,7 @@ public class ImageController {
         updatedImage.setDate(new Date());
 
         imageService.updateImage(updatedImage);
-        return "redirect:/images/" + updatedImage.getTitle();
+        return "redirect:/images/" + updatedImage.getId()+'/'+updatedImage.getTitle();
     }
 
 
