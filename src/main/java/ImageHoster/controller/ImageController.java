@@ -53,8 +53,11 @@ public class ImageController {
     @RequestMapping("/images/{id}")
     public String showImage(@PathVariable("id") int id, Model model) {
         Image image = imageService.getImageById(id);
+
         model.addAttribute("image", image);
+
         model.addAttribute("tags", image.getTags());
+
         model.addAttribute("comments", image.getComments());
         image.getComments().stream().forEach(System.out::println);
         return "images/image";

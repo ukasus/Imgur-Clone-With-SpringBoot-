@@ -8,10 +8,7 @@ import ImageHoster.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import java.util.List;
@@ -44,7 +41,8 @@ public class UserController {
     //This controller method is called when the request pattern is of type 'users/registration' and also the incoming request is of POST type
     //This method calls the business logic and after the user record is persisted in the database, directs to login page
     @RequestMapping(value = "users/registration", method = RequestMethod.POST)
-    public String registerUser(User user, @RequestParam("retypePassword") String repassword, Model model) {
+
+    public String registerUser(User user, @RequestParam(value = "retypePassword",required = false) String repassword, Model model) {
 
         String numRegex   = ".*[0-9].*";
         String alphaRegex = ".*[A-Za-z].*";
@@ -60,7 +58,7 @@ public class UserController {
             return "users/registration";
 
         }
-        else if(!repassword.equals(user.getPassword()))
+        else if(repassword !=null && !repassword.equals(user.getPassword()))
         {
             String error = "Password does not match";
             model.addAttribute("User", user);
@@ -71,7 +69,7 @@ public class UserController {
 
 
         userService.registerUser(user);
-        return "redirect:/users/login";
+        return "users/login";
     }
 
     //This controller method is called when the request pattern is of type 'users/login'
